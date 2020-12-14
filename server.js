@@ -1,40 +1,65 @@
 const rp = require("request-promise");
 const cheerio = require("cheerio");
-const url = "https://movie.douban.com";
-const debug = require("debug")("movie:read");
-const read = async url => {
-  debug("开始读取最近上映的电影");
+var fs = require("fs");
+var path = require("path");
+var start = 0;
+var url = "https://movie.douban.com/top250?start=";
+var end = "&filter=";
+const getMovies = async (url, start, end) => {
   const opts = {
-    url,
+    url: `${url}${start}${end}`,
     transform: body => cheerio.load(body),
   };
+  var top250 = [];
   let $ = await rp(opts);
-  let result = []; // 结果数组
-  $("#screening li.ui-slide-item").each((index, item) => {
-    let ele = $(item);
-    let name = ele.data("title");
-    let score = ele.data("rate") || "暂无评分";
-    let href = ele.find(".poster a").attr("href");
-    let image = ele.find("img").attr("src");
-    let id = href && href.match(/(\d+)/)[1];
-    image = image && image.replace(/jpg$/, "webp");
-
-    if (!name || !image || !href) return;
-
-    result.push({
-      name,
-      score,
-      href,
-      image,
-      id,
-    });
-    debug(`正在读取电影：${name}`);
+  $("li>.item>.info").each((index, ele) => {
+    var movie = {
+      picture: $(ele).prev().find("img").attr("src"),
+      title: $(ele)
+        .children(".hd")
+        .text()
+        .replace(/[\r\n]/g, "")
+        .replace(/\ +/g, ""),
+      details: $(ele)
+        .children(".bd")
+        .find(".star")
+        .prev()
+        .text()
+        .replace(/[\r\n]/g, "")
+        .replace(/\ +/g, ""),
+      score: $(ele).children(".bd").find(".star").find(".rating_num").text(),
+      nums: $(ele)
+        .children(".bd")
+        .find(".star")
+        .find(".rating_num")
+        .next()
+        .next()
+        .text()
+        .replace(/[\r\n]/g, "")
+        .replace(/\ +/g, ""),
+      quote: $(ele)
+        .children(".bd")
+        .find(".quote")
+        .text()
+        .replace(/[\r\n]/g, "")
+        .replace(/\ +/g, ""),
+    };
+    top250.push(movie);
   });
-  return result;
+
+  fs.appendFile(
+    path.resolve(__dirname, "data.json"),
+    JSON.stringify(top250),
+    () => {
+      console.log("保存成功");
+    }
+  );
+  if (start < 225) {
+    getMovies(url, start + 25, end);
+  } else {
+    console.log("爬取成功！");
+  }
 };
 
-const start = async url => {
-  let res = await read(url);
-  console.log(res);
-};
-start(url);
+//开始爬取页面数据
+getMovies(url, start, end);
