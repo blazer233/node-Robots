@@ -2,64 +2,52 @@ const rp = require("request-promise");
 const cheerio = require("cheerio");
 var fs = require("fs");
 var path = require("path");
-var start = 0;
-var url = "https://movie.douban.com/top250?start=";
-var end = "&filter=";
-const getMovies = async (url, start, end) => {
-  const opts = {
-    url: `${url}${start}${end}`,
-    transform: body => cheerio.load(body),
-  };
-  var top250 = [];
-  let $ = await rp(opts);
-  $("li>.item>.info").each((index, ele) => {
-    var movie = {
-      picture: $(ele).prev().find("img").attr("src"),
-      title: $(ele)
-        .children(".hd")
-        .text()
-        .replace(/[\r\n]/g, "")
-        .replace(/\ +/g, ""),
-      details: $(ele)
-        .children(".bd")
-        .find(".star")
-        .prev()
-        .text()
-        .replace(/[\r\n]/g, "")
-        .replace(/\ +/g, ""),
-      score: $(ele).children(".bd").find(".star").find(".rating_num").text(),
-      nums: $(ele)
-        .children(".bd")
-        .find(".star")
-        .find(".rating_num")
-        .next()
-        .next()
-        .text()
-        .replace(/[\r\n]/g, "")
-        .replace(/\ +/g, ""),
-      quote: $(ele)
-        .children(".bd")
-        .find(".quote")
-        .text()
-        .replace(/[\r\n]/g, "")
-        .replace(/\ +/g, ""),
-    };
-    top250.push(movie);
-  });
-
-  fs.appendFile(
-    path.resolve(__dirname, "data.json"),
-    JSON.stringify(top250),
-    () => {
-      console.log("保存成功");
-    }
-  );
-  if (start < 225) {
-    getMovies(url, start + 25, end);
-  } else {
-    console.log("爬取成功！");
-  }
-};
+var url = "https://www.meishij.net/chufang/diy/jiangchangcaipu/?&page=";
+var start = 1;
+const res = [];
 
 //开始爬取页面数据
-getMovies(url, start, end);
+getMovies(url, start);
+const sleep = numberMillis => {
+  const exitTime = +new Date() + numberMillis;
+  while (true) {
+    if (+new Date() > exitTime) return;
+  }
+};
+const getMovies = async (url, start) => {
+  console.log(`开始爬取第${start}页`);
+  const startTime = +new Date();
+  const opts = {
+    url: `${url}${start}`,
+    transform: body => cheerio.load(body),
+  };
+  let $ = await rp(opts);
+  $("#listtyle1_list > div").each((index, ele) => {
+    //   rp($(ele).find("img").attr("src")).pipe(
+    //     fs.createWriteStream(
+    //       dir + "/" + start + "_" + $(ele).find("a").attr("title") + ".jpg"
+    //     )
+    //   );
+    res.push({
+      title: $(ele).find("a").attr("title"),
+      img: $(ele).find("img").attr("src"),
+      desc: $(ele).find(".li2").text(),
+      type: $(ele).find(".li1").text(),
+    });
+  });
+  if (start < 56) {
+    console.log(`爬取完成第${start}页,用时${+new Date() - startTime}`);
+    sleep(50);
+    getMovies(url, start + 1);
+  } else {
+    console.log(`爬取完成`);
+    fs.writeFile(
+      path.resolve(__dirname, "food.json"),
+      JSON.stringify(res),
+      err => {
+        if (err) throw err;
+        console.log("JSON data is saved.");
+      }
+    );
+  }
+};
