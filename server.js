@@ -1,5 +1,5 @@
 const rp = require("request-promise");
-sconst config = require("./config");
+const config = require("./config");
 const fs = require("fs");
 const path = require("path");
 const page = 1;
