@@ -16,6 +16,10 @@
     "request-promise": "^4.2.4"
   },
   "dependencies": {
-    "nodemon": "^2.0.6"
+    "chromedriver": "^87.0.4",
+    "nodemon": "^2.0.6",
+    "phantom": "^6.3.0",
+    "selenium-webdriver": "^4.0.0-alpha.8",
+    "webpage": "^0.3.0"
   }
 }
