@@ -16,10 +16,19 @@
     "request-promise": "^4.2.4"
   },
   "dependencies": {
+    "casper": "^0.1.1",
+    "casper-nodejs": "^1.0.0",
+    "chinese-random-ip": "^0.0.5",
     "chromedriver": "^87.0.4",
+    "iobroker.phantomjs": "^1.1.2",
     "nodemon": "^2.0.6",
+    "pdf-merge": "^1.2.0",
     "phantom": "^6.3.0",
+    "puppeteer": "^5.5.0",
+    "puppeteer-core": "^5.5.0",
+    "puppeteer-proxy": "^2.1.1",
     "selenium-webdriver": "^4.0.0-alpha.8",
+    "utils": "^0.3.1",
     "webpage": "^0.3.0"
   }
 }

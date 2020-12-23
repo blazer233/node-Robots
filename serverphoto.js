@@ -1,63 +1,66 @@
-const rp = require("request-promise");
+const phantom = require("phantom");
 const cheerio = require("cheerio");
 const config = require("./config");
-var fs = require("fs");
-var path = require("path");
+const fs = require("fs");
+const path = require("path");
+const rp = require("request-promise");
 const errors = [];
-const success = [];
-const photo = [];
-var start = 1;
-// const sleep = numberMillis => {
-//   const exitTime = +new Date() + numberMillis;
-//   while (true) {
-//     if (+new Date() > exitTime) return;
-//   }
-// };
-const opts = ({ url, transform }) => ({
+const header = {
   "X-Forwarded-For": config.returnIp(),
   "User-Agent": config.randomHead(),
-  transform,
-  url,
-});
-const getMovies = async start => {
-  try {
-    const startTime = +new Date();
-    console.log(`开始爬取第${start}页`);
-    const url = `http://www.cndesign.com/opus/list_${start}.html`;
-    let $ = await rp(opts({ url, transform: body => cheerio.load(body) }));
-    $(".img_box.crop_img").each(async (i, el) => {
-      let urls = "http://www.cndesign.com" + $(el).attr("href");
-      let _$ = await rp(
-        opts({ url: urls, transform: body => cheerio.load(body) })
+};
+const page = 1;
+const phantom_ = async page => {
+  const instance = await phantom.create();
+  const page = await instance.createPage();
+  await page.on("onResourceRequested", function (requestData) {
+    console.info("Requesting", requestData.url);
+  });
+
+  page.property("customHeaders", header);
+  const status = await page.open(
+    `https://photo.poco.cn/?classify_type=${page}&works_type=medal`
+  );
+  console.info("当前状态：" + status);
+  const content = await page.property("content");
+  const $ = cheerio.load(content);
+  $(".photo-list-padding a").each(async (index, el) => {
+    const _page = await instance.createPage();
+    _page.property("customHeaders", {
+      "X-Forwarded-For": config.returnIp(),
+      "User-Agent": config.randomHead(),
+    });
+    const _status = await _page.open(
+      "http://desk.zol.com.cn" + $(el).attr("href")
+    );
+    console.info("子页面当前状态：" + _status);
+    const _content = await _page.property("content");
+    const _$ = cheerio.load(_content);
+    _$("#showImg li a").each(async (_index, _el) => {
+      const name = index + _index + ".jpg";
+      console.log(`正在爬取第 ${index} 页`);
+      const _page_ = await instance.createPage();
+      const _status_ = await _page_.open(
+        "http://desk.zol.com.cn" + _$(_el).attr("href")
       );
-      _$(".crop_img img").each((_i, _el) => {
-        let _url = _$(_el).attr("src");
-        let name = i + "_" + _$(_el).attr("alt") + "_" + _i + ".jpg";
-        let out = fs.createWriteStream(
-          path.resolve(__dirname + "/photo", name)
-        );
-        rp(opts({ url: _url })).pipe(out);
-        out.on("error", err => {
-          errors.push(0);
-          console.log(`错误原因：${err} 共出错${errors.length}张`);
-        });
-        out.on("finsh", () => {
-          success.push(1);
-          console.log(`下载${name}成功,共下载${success.length}张`);
-        });
+      console.info("孙页面当前状态：" + _status_);
+      const _content_ = await _page_.property("content");
+      const _$_ = cheerio.load(_content_);
+      const _page_load = await instance.createPage();
+      const _status_load = await _page_load.open(
+        "http://desk.zol.com.cn" + _$_("#tagfbl #2560x1440").attr("href")
+      );
+      console.info("下载页面当前状态：" + _status_load);
+      const _content_load = await _page_load.property("content");
+      const _$_load = cheerio.load(_content_load);
+      let _url = _$_load("img").eq(0).attr(src);
+      let out = fs.createWriteStream(path.resolve(__dirname + "/photo", name));
+      rp(opts({ url: _url })).pipe(out);
+      out.on("error", err => {
+        errors.push(0);
+        console.log(`错误原因：${err.stack} 共出错${errors.length}张`);
       });
     });
-    if (start < 10) {
-      console.log(`爬取完成第${start}页,用时${+new Date() - startTime}`);
-      getMovies(start + 1);
-    } else {
-      console.log(
-        `下载完成 一共成功${success.length}张，失败${errors.length}张`
-      );
-    }
-  } catch (error) {
-    console.log(error);
-  }
+  });
 };
-//开始爬取页面数据
-getMovies(start);
+phantom_();

@@ -21,7 +21,6 @@ const opts = ({ url, transform }) => ({
 });
 const getMovies = async start => {
   console.log(`开始爬取第${start}页`);
-  //https://www.freeimages.com/cn/image/${start}
   const url = `https://www.istockphoto.com/photos/girl?mediatype=photography&page=${start}&phrase=girl&sort=best`;
   const startTime = +new Date();
   let $ = await rp(opts({ url, transform: body => cheerio.load(body) }));
@@ -48,7 +47,9 @@ const getMovies = async start => {
     );
     console.log(`开始下载`);
     successPhoto.map(({ url, name }) => {
-      let out = fs.createWriteStream(path.resolve(__dirname + "/img", name));
+      let out = fs.createWriteStream(path.resolve(__dirname + "/img", name), {
+        autoClose: true,
+      });
       rp(opts({ url })).pipe(out);
       out.on("error", err => {
         errors.push(0);

@@ -39,3 +39,7 @@ exports.returnIp = () => {
     Math.floor(Math.random() * (10 - 255) + 255)
   );
 };
+exports.sleep = time =>
+  new Promise(resolve => {
+    setTimeout(resolve, time);
+  });
