@@ -27,6 +27,7 @@
     "puppeteer": "^5.5.0",
     "puppeteer-core": "^5.5.0",
     "puppeteer-proxy": "^2.1.1",
+    "puppeteer-walker": "^1.2.0",
     "selenium-webdriver": "^4.0.0-alpha.8",
     "utils": "^0.3.1",
     "webpage": "^0.3.0"
