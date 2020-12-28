@@ -23,7 +23,7 @@ const opts = ({ url }) => ({
 const down = async () => {
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
-  await page.goto(`http://m.dili360.com/gallery/cate/6.htm`);
+  await page.goto(`http://m.dili360.com/gallery/cate/9.htm`);
   const img = await page.evaluate(
     el => Array.from($(el)).map(i => i.getAttribute("href")),
     ".right-side li a"
@@ -32,10 +32,9 @@ const down = async () => {
   console.log(`----搜索成功，一共${img.length}组----`);
   for (let i = 0; i < img.length; i++) {
     console.log(`----正在爬取第${i + 1}组----`);
-    const page_ = await browser.newPage();
-    await page_.goto(`http://m.dili360.com/${img[i]}`);
+    await page.goto(`http://m.dili360.com/${img[i]}`);
     sleep(1000);
-    const imgs = await page_.evaluate(
+    const imgs = await page.evaluate(
       el =>
         Array.from($(el)).map((i, index) => ({
           oder: index + 1,
@@ -45,7 +44,7 @@ const down = async () => {
       ".ship li"
     );
     msg = [...msg, ...imgs];
-    console.log(msg);
+    console.log(msg.length);
   }
   console.log(`----爬取成功，开始下载----`);
   msg.map(({ href: url, text: t, oder }) => {
@@ -61,6 +60,6 @@ const down = async () => {
       console.log(`错误原因：${err.stack} 共出错${error.length}张`);
     });
   });
-  await browser.close();
+  browser.close();
 };
 down();

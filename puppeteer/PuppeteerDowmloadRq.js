@@ -22,8 +22,13 @@ const down = async () => {
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
   await page.goto(`https://www.guazi.com/sz/buy/o1/#bread`);
-  for (let i = start; i < 5; i++) {
+  const len = await page.evaluate(
+    el => Number($(el).eq(-2).text()),
+    ".pageLink.clearfix > li"
+  );
+  for (let i = start; i < len; i++) {
     console.log(i);
+    console.log(msg.length);
     const brands = await page.evaluate(
       el =>
         [...$(el)].map(i => ({
