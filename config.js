@@ -39,7 +39,15 @@ exports.returnIp = () => {
     Math.floor(Math.random() * (10 - 255) + 255)
   );
 };
-exports.sleep = time =>
+exports.AsyncSleep = time =>
   new Promise(resolve => {
     setTimeout(resolve, time);
   });
+exports.Sleep = numberMillis => {
+  let now = new Date();
+  const exitTime = now.getTime() + numberMillis;
+  while (true) {
+    now = new Date();
+    if (now.getTime() > exitTime) return;
+  }
+};
