@@ -31,7 +31,7 @@ const down = async () => {
   // PageUrl = await page.$$eval(".gallery-cate-list li[class=''] a", el =>
   //   el.map(i => "http://m.dili360.com" + i.getAttribute("href"))
   // );
-  // for (let i = 0; i < PageUrl.length; i++) {
+  // for (let i = 0; i < PageUrl.length; i++) { 
   //   await page.goto(PageUrl[i]);
   //   const manyPage = await page.$$eval(".pagination li", el => el.length);
   //   const pageArr = manyPage
