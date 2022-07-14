@@ -18,7 +18,7 @@ const events = async () => {
   await page.keyboard.down("Tab"); //敲击Tab键
   await page.frames().map(frame => frame.url());
   //找出页面所有的frames
-  await page.type("#password", "Songyan123?", { delay: 20 }); //向某个 Input 中输入字符
+  await page.type("#password", "123321", { delay: 20 }); //向某个 Input 中输入字符
   await page.click('[name="commit"]'); //点击某个节点
   await page.keyboard.press("Enter");
   await page.waitForNavigation({
